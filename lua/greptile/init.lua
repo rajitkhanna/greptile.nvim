@@ -1,18 +1,19 @@
+-- TODO: require telescope and plenary
+
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 
 local log = require("plenary.log")
 log.level = "debug"
 
-local search_repo = function(prompt)
-	local http = require("socket.http")
-	local json = require("json")
-	local ltn12 = require("ltn12")
+local curl = require("plenary.curl")
+local json = require("plenary.json")
 
+local search_repo = function(prompt)
 	local response_body = {}
 
 	local url = "https://api.greptile.com/v2/search"
-	local method = "POST"
+	-- local method = "POST"
 	local headers = {
 		["Authorization"] = "Bearer" .. os.getenv("GREPTILE_API_KEY"),
 		["Content-Type"] = "application/json",
@@ -28,18 +29,13 @@ local search_repo = function(prompt)
 		},
 	}
 
-	local _, code, _ = http.request({
-		url = url,
-		method = method,
+	local response = curl.post(url, {
+		body = vim.fn.json_encode(body),
 		headers = headers,
-		source = ltn12.source.string(body),
-		sink = ltn12.sink.table(response_body),
 	})
 
-	log.debug(response_body)
-
-	if code ~= 200 then
-		error("API request failed with status code: " .. code)
+	if response.status ~= 200 then
+		error("API request failed with status code: " .. response.status)
 	end
 
 	return json.decode(table.concat(response_body))
@@ -51,6 +47,7 @@ local semantic_search = function(opts)
 			prompt_title = "Semantic Search",
 			finder = finders.new_table({
 				results = search_repo("give me the file that extends telescope"),
+				log.debug(results),
 			}),
 		})
 		:find()
