@@ -8,22 +8,35 @@ if not has_plenary then
 	error("This extension requires plenary.nvim (https://github.com/nvim-lua/plenary.nvim)")
 end
 
-local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
-local previewers = require("telescope.previewers")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local builtin = require("telescope.builtin")
-
-local log = require("plenary.log")
-log.level = "debug"
 
 local curl = require("plenary.curl")
 
 local greptile_api_key = os.getenv("GREPTILE_API_KEY")
 local github_token = os.getenv("GITHUB_TOKEN")
 
+local function get_git_info()
+	local branch = vim.fn.system("git rev-parse --abbrev-ref HEAD"):gsub("\n", "")
+	local repo_url = vim.fn.system("git config --get remote.origin.url"):gsub("\n", "")
+	local repo_name = repo_url:match("github.com[:/]([%w%-%.]+/[%w%-%.]+)")
+	return branch, repo_name
+end
+
+local function get_file_icon(filename)
+	local ok, devicons = pcall(require, "nvim-web-devicons")
+	if not ok then
+		return ""
+	end
+	local icon, _ = devicons.get_icon(filename, string.match(filename, "%a+$"), { default = true })
+	return icon and (icon .. " ") or ""
+end
+
 local search_repo = function(prompt)
+	local branch, repo_name = get_git_info()
+
 	local url = "https://api.greptile.com/v2/search"
 	local headers = {
 		["Authorization"] = "Bearer " .. greptile_api_key,
@@ -36,8 +49,8 @@ local search_repo = function(prompt)
 		["repositories"] = {
 			{
 				["remote"] = "github",
-				["branch"] = "main",
-				["repository"] = "rajitkhanna/greptile.nvim",
+				["branch"] = branch,
+				["repository"] = repo_name,
 			},
 		},
 	}
@@ -59,23 +72,18 @@ local semantic_search_picker = function(opts)
 	local cwd = vim.fn.getcwd()
 
 	local function refresh_picker_with_results(prompt_bufnr)
-		local prompt = action_state.get_current_line()
+		local prompt = action_state.get_current_line() .. ". Exclude any directories."
 		local results = search_repo(prompt)
-		print(results)
 		local current_picker = action_state.get_current_picker(prompt_bufnr)
-
-		-- Debugging: print the results
-		print("Results:", vim.inspect(results))
 
 		current_picker:refresh(
 			finders.new_table({
 				results = results,
 				entry_maker = function(entry)
-					log.debug(entry)
 					return {
-						value = entry.filepath,
-						display = entry.filepath,
-						ordinal = entry.filepath,
+						value = cwd .. "/" .. entry.filepath,
+						display = get_file_icon(entry.filepath) .. entry.filepath:gsub("^/", ""),
+						ordinal = prompt,
 					}
 				end,
 			}),
