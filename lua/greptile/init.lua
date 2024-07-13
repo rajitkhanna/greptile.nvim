@@ -184,6 +184,16 @@ M.semantic_search = function(opts)
 
 	builtin.find_files({
 		prompt_title = "Semantic Search",
+		finder = finders.new_table({
+			results = {}, -- Start with no results
+			entry_maker = function(entry)
+				return {
+					value = entry,
+					display = entry,
+					ordinal = entry,
+				}
+			end,
+		}),
 		attach_mappings = function(prompt_bufnr, map)
 			map("i", "<CR>", function()
 				refresh_picker_with_results(prompt_bufnr)
