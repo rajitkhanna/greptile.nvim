@@ -126,7 +126,7 @@ local search_repo = function(prompt)
 		local response = curl.post(url, {
 			body = vim.json.encode(body),
 			headers = headers,
-			timeout = 10000,
+			timeout = 20000,
 		})
 
 		if response.status ~= 200 then
