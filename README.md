@@ -1,15 +1,7 @@
 # 💥 Semantic Search
 **greptile.nvim** is a lua plugin for Neovim >= 0.8.0 to search for files in natural language. 
 
-![Preview](https://imgur.com/a/Qug0DFb.gif)
-
-
-https://github.com/user-attachments/assets/2e1e450e-730d-4d5f-be0c-c2301d550298
-
-
-![Preview](https://github.com/user-attachments/assets/d6cdec22-0355-454e-b083-ef10d63ca9ce)
-
-![image.png](https://github.com/user-attachments/assets/1a568885-b455-4ac6-9490-25347390b8c3)
+https://github.com/user-attachments/assets/08035321-a683-4128-995b-7de050c14e0f
 
 ## ✨ Features
 - Search for any file or set of files is natural language with the [Greptile API](https://docs.greptile.com/introduction)
@@ -61,3 +53,4 @@ return {
 ```vim
 :GreptileSearch
 ```
+![image.png](https://github.com/user-attachments/assets/1a568885-b455-4ac6-9490-25347390b8c3)
