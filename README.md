@@ -3,6 +3,8 @@
 
 ![Preview](https://imgur.com/a/Qug0DFb.gif)
 
+![Preview](https://github.com/user-attachments/assets/d6cdec22-0355-454e-b083-ef10d63ca9ce)
+
 ![image.png](https://github.com/user-attachments/assets/1a568885-b455-4ac6-9490-25347390b8c3)
 
 ## ✨ Features
