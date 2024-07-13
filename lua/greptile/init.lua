@@ -30,6 +30,7 @@ local M = {}
 local function get_git_info()
 	local branch = vim.fn.system("git rev-parse --abbrev-ref HEAD"):gsub("\n", "")
 	local repo_url = vim.fn.system("git config --get remote.origin.url"):gsub("\n", "")
+	repo_url = repo_url:gsub("%.git$", "") -- Remove the .git suffix if it exists
 	local repo_name = repo_url:match("github.com[:/]([%w%-%.]+/[%w%-%.]+)")
 	return branch, repo_name
 end
@@ -62,7 +63,6 @@ local indexed = function()
 	})
 
 	if response.status ~= 200 then
-		-- log.debug(vim.json.decode(response))
 		return PROCESSING_STATUS.NOT_STARTED
 	elseif vim.json.decode(response.body).status == "completed" then
 		return PROCESSING_STATUS.COMPLETED
@@ -96,7 +96,10 @@ local search_repo = function(prompt)
 
 		if response.status ~= 200 then
 			error(
-				"API request failed with status code: " .. response.status .. "\n" .. vim.json.decode(response).response
+				"API request failed with status code: "
+					.. response.status
+					.. "\n"
+					.. vim.json.decode(response.body).response
 			)
 		end
 	elseif status == PROCESSING_STATUS.IN_PROGRESS then
@@ -123,6 +126,7 @@ local search_repo = function(prompt)
 		local response = curl.post(url, {
 			body = vim.json.encode(body),
 			headers = headers,
+			timeout = 10000,
 		})
 
 		if response.status ~= 200 then
@@ -138,7 +142,7 @@ M.semantic_search = function(opts)
 	local cwd = vim.fn.getcwd()
 
 	local function refresh_picker_with_results(prompt_bufnr)
-		local prompt = action_state.get_current_line() .. ". Exclude any directories."
+		local prompt = action_state.get_current_line() .. ". Only return files (not directories)."
 		local results = search_repo(prompt)
 		local current_picker = action_state.get_current_picker(prompt_bufnr)
 
